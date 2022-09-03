@@ -1,0 +1,36 @@
+version: "3"
+
+volumes:
+  currency_exchange_local_postgres_data: {}
+  currency_exchange_local_postgres_data_backups: {}
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    image: currency_exchange_local_django
+    container_name: currency_exchange_local_django
+    platform: linux/x86_64
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "8000:8000"
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./docker/production/postgres/Dockerfile
+    image: currency_exchange_production_postgres
+    container_name: currency_exchange_local_postgres
+    volumes:
+      - currency_exchange_local_postgres_data:/var/lib/postgresql/data:Z
+      - currency_exchange_local_postgres_data_backups:/backups:z
+    env_file:
+      - ./.envs/.local/.postgres

@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=currency_exchange
+POSTGRES_USER=revUrjfoFgQOYIUOeXcPVmTpMHYDBKzN
+POSTGRES_PASSWORD=PbxPHjIl1Hk5n5XnIYUStMgz78x9SbJ1iUxRkNvAZ5Q07UvbAEMwPsv7pT1W4B7x
