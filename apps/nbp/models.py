@@ -12,7 +12,6 @@ class ExchangeRate(models.Model):
     date = models.DateField(
         "date",
     )
-    amount = models.DecimalField("amount", max_digits=60, decimal_places=2)
     currency_input = models.CharField(
         "currency input", choices=Currency.choices, max_length=3
     )
