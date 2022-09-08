@@ -1,20 +1,14 @@
 from django.db import models
 
+from apps.nbp.choices import CurrencyExchangePLN
 
-class ExchangeRate(models.Model):
-    class Currency(models.TextChoices):
-        PLN = "PLN", "Polish Zloty"
-        USD = "USD", "US Dollar"
-        EUR = "EUR", "Euro"
-        CHF = "CHF", "CHF"
-        GBP = "JPY", "Japanese Yen"
+
+class ExchangeRatePLN(models.Model):
 
     date = models.DateField(
         "date",
     )
-    currency_input = models.CharField(
-        "currency input", choices=Currency.choices, max_length=3
+    currency = models.CharField(
+        "currency", choices=CurrencyExchangePLN.choices, max_length=3
     )
-    currency_output = models.CharField(
-        "currency output", choices=Currency.choices, max_length=3
-    )
+    rate = models.DecimalField(max_digits=10, decimal_places=4)
