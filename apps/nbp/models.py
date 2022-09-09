@@ -21,8 +21,8 @@ class ExchangeRatePLN(models.Model):
     def __str__(self):
         return f"{self.date} {self.currency} {self.rate}"
 
-    def exchange_from_pln(self, amount: Decimal) -> Decimal:
+    def exchange_to_pln(self, amount: Decimal) -> Decimal:
         return round(amount * self.rate, 2)
 
-    def exchange_to_pln(self, amount: Decimal) -> Decimal:
+    def exchange_from_pln(self, amount: Decimal) -> Decimal:
         return round(amount / self.rate, 2)
