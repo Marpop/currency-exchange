@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('nbp', '0001_initial'),
+        ("nbp", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='exchangeratepln',
-            unique_together={('date', 'currency')},
+            name="exchangeratepln",
+            unique_together={("date", "currency")},
         ),
     ]
