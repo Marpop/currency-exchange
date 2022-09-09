@@ -17,3 +17,10 @@ class ExchangeRateSerializer(serializers.Serializer):
             "currency_input",
             "currency_output",
         ]
+
+    def validate(self, data):
+        if data["currency_input"] == data["currency_output"]:
+            raise serializers.ValidationError(
+                "Currency input and output cannot be the same."
+            )
+        return data
