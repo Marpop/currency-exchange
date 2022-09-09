@@ -30,19 +30,18 @@ class Test_NBP_API:
             url=self.url, json=self.response_ok, status_code=status.HTTP_200_OK
         )
         response = self.nbp_api.get_exchange_response(self.code, self.date)
-        print(response)
         assert response.data == self.response_ok
         assert response.status_code == status.HTTP_200_OK
-        requests_mock.call_count == 1
+        assert requests_mock.call_count == 1
 
     def test_get_exchange_response_404(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_404_NOT_FOUND)
         response = self.nbp_api.get_exchange_response(self.code, self.date)
         assert response.status_code == status.HTTP_404_NOT_FOUND
-        requests_mock.call_count == 1
+        assert requests_mock.call_count == 1
 
     def test_get_exchange_response_400(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_400_BAD_REQUEST)
         response = self.nbp_api.get_exchange_response(self.code, self.date)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        requests_mock.call_count == 1
+        assert requests_mock.call_count == 1
