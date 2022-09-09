@@ -18,15 +18,9 @@
 
      make lint
 
-### To access admin panel create admin user
-
-     make manage createsuperuser
-
 ### Running locally
 
      docker-compose up
 
-- API: http://0.0.0.0:8000/api/
 - API docs: http://0.0.0.0:8000/api/docs/
 - API schema: http://0.0.0.0:8000/api/schema/
-- Admin: http://0.0.0.0:8000/admin/
