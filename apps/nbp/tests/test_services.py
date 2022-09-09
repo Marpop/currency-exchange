@@ -1,7 +1,5 @@
 import datetime
 
-import pytest
-from requests.exceptions import ReadTimeout
 from rest_framework import status
 
 from apps.nbp.choices import CurrencyExchangePLN
@@ -27,7 +25,7 @@ class Test_NBP_API:
             ],
         }
 
-    def test_response_200(self, requests_mock):
+    def test_get_exchange_response_200(self, requests_mock):
         requests_mock.get(
             url=self.url, json=self.response_ok, status_code=status.HTTP_200_OK
         )
@@ -37,13 +35,13 @@ class Test_NBP_API:
         assert response.status_code == status.HTTP_200_OK
         requests_mock.call_count == 1
 
-    def test_response_404(self, requests_mock):
+    def test_get_exchange_response_404(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_404_NOT_FOUND)
         response = self.nbp_api.get_exchange_response(self.code, self.date)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         requests_mock.call_count == 1
 
-    def test_response_400(self, requests_mock):
+    def test_get_exchange_response_400(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_400_BAD_REQUEST)
         response = self.nbp_api.get_exchange_response(self.code, self.date)
         assert response.status_code == status.HTTP_400_BAD_REQUEST

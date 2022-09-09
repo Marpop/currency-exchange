@@ -21,9 +21,10 @@ class NBP_API:
             )
             if response.status_code == status.HTTP_200_OK:
                 self.logger.info(f"{date} {code} exchange get")
+                return Response(response.json(), status=status.HTTP_200_OK)
             else:
                 self.logger.error(f"{date} {code} {response}")
-            return Response(status=response.status_code)
+                return Response(status=response.status_code)
         except requests.exceptions.RequestException as error:
             self.logger.error(f"Request error: {error}")
             return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
