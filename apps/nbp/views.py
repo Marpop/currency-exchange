@@ -46,7 +46,7 @@ class ExchangeRateView(APIView):
                     {currency_output: exchange_rate.exchange_from_pln(amount)},
                     status=status.HTTP_200_OK,
                 )
-            elif currency_output == Currency.PLN:
+            if currency_output == Currency.PLN:
                 try:
                     exchange_rate = ExchangeRatePLN.objects.get(
                         date=date, currency=currency_input
@@ -65,45 +65,43 @@ class ExchangeRateView(APIView):
                     {currency_input: exchange_rate.exchange_to_pln(amount)},
                     status=status.HTTP_200_OK,
                 )
-            else:
-                try:
-                    exchange_rate_input = ExchangeRatePLN.objects.get(
-                        date=date, currency=currency_input
-                    )
-                except ExchangeRatePLN.DoesNotExist:
-                    nbp_response = NBP_API().get_exchange_response(currency_input, date)
-                    if nbp_response.status_code == status.HTTP_200_OK:
-                        exchange_rate_input = ExchangeRatePLN.objects.create(
-                            date=date,
-                            currency=currency_input,
-                            rate=Decimal(nbp_response.data["rates"][0]["mid"]),
-                        )
-                    else:
-                        return nbp_response
-                try:
-                    exchange_rate_output = ExchangeRatePLN.objects.get(
-                        date=date, currency=currency_output
-                    )
-                except ExchangeRatePLN.DoesNotExist:
-                    nbp_response = NBP_API().get_exchange_response(
-                        currency_output, date
-                    )
-                    if nbp_response.status_code == status.HTTP_200_OK:
-                        exchange_rate_output = ExchangeRatePLN.objects.create(
-                            date=date,
-                            currency=currency_output,
-                            rate=Decimal(nbp_response.data["rates"][0]["mid"]),
-                        )
-                    else:
-                        return nbp_response
-                return Response(
-                    {
-                        currency_input: exchange_rate_output.exchange_from_pln(
-                            exchange_rate_input.exchange_to_pln(amount)
-                        )
-                    },
-                    status=status.HTTP_200_OK,
+
+            try:
+                exchange_rate_input = ExchangeRatePLN.objects.get(
+                    date=date, currency=currency_input
                 )
+            except ExchangeRatePLN.DoesNotExist:
+                nbp_response = NBP_API().get_exchange_response(currency_input, date)
+                if nbp_response.status_code == status.HTTP_200_OK:
+                    exchange_rate_input = ExchangeRatePLN.objects.create(
+                        date=date,
+                        currency=currency_input,
+                        rate=Decimal(nbp_response.data["rates"][0]["mid"]),
+                    )
+                else:
+                    return nbp_response
+            try:
+                exchange_rate_output = ExchangeRatePLN.objects.get(
+                    date=date, currency=currency_output
+                )
+            except ExchangeRatePLN.DoesNotExist:
+                nbp_response = NBP_API().get_exchange_response(currency_output, date)
+                if nbp_response.status_code == status.HTTP_200_OK:
+                    exchange_rate_output = ExchangeRatePLN.objects.create(
+                        date=date,
+                        currency=currency_output,
+                        rate=Decimal(nbp_response.data["rates"][0]["mid"]),
+                    )
+                else:
+                    return nbp_response
+            return Response(
+                {
+                    currency_input: exchange_rate_output.exchange_from_pln(
+                        exchange_rate_input.exchange_to_pln(amount)
+                    )
+                },
+                status=status.HTTP_200_OK,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
