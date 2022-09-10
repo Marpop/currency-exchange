@@ -1,5 +1,3 @@
-# from decimal import Decimal
-
 from decimal import Decimal
 
 from drf_spectacular.utils import extend_schema
@@ -31,14 +29,12 @@ class ExchangeRateView(APIView):
                         date=date, currency=currency_output
                     )
                 except ExchangeRatePLN.DoesNotExist:
-                    nbp_response = NBP_API().get_exchange_response(
-                        currency_output, date
-                    )
+                    nbp_response = NBP_API().get_exchange_rate(currency_output, date)
                     if nbp_response.status_code == status.HTTP_200_OK:
                         exchange_rate = ExchangeRatePLN.objects.create(
                             date=date,
                             currency=currency_output,
-                            rate=Decimal(nbp_response.data["rates"][0]["mid"]),
+                            rate=Decimal(nbp_response.data["rate"]),
                         )
                     else:
                         return nbp_response
@@ -52,12 +48,12 @@ class ExchangeRateView(APIView):
                         date=date, currency=currency_input
                     )
                 except ExchangeRatePLN.DoesNotExist:
-                    nbp_response = NBP_API().get_exchange_response(currency_input, date)
+                    nbp_response = NBP_API().get_exchange_rate(currency_input, date)
                     if nbp_response.status_code == status.HTTP_200_OK:
                         exchange_rate = ExchangeRatePLN.objects.create(
                             date=date,
                             currency=currency_input,
-                            rate=Decimal(nbp_response.data["rates"][0]["mid"]),
+                            rate=Decimal(nbp_response.data["rate"]),
                         )
                     else:
                         return nbp_response
@@ -71,12 +67,12 @@ class ExchangeRateView(APIView):
                     date=date, currency=currency_input
                 )
             except ExchangeRatePLN.DoesNotExist:
-                nbp_response = NBP_API().get_exchange_response(currency_input, date)
+                nbp_response = NBP_API().get_exchange_rate(currency_input, date)
                 if nbp_response.status_code == status.HTTP_200_OK:
                     exchange_rate_input = ExchangeRatePLN.objects.create(
                         date=date,
                         currency=currency_input,
-                        rate=Decimal(nbp_response.data["rates"][0]["mid"]),
+                        rate=Decimal(nbp_response.data["rate"]),
                     )
                 else:
                     return nbp_response
@@ -85,12 +81,12 @@ class ExchangeRateView(APIView):
                     date=date, currency=currency_output
                 )
             except ExchangeRatePLN.DoesNotExist:
-                nbp_response = NBP_API().get_exchange_response(currency_output, date)
+                nbp_response = NBP_API().get_exchange_rate(currency_output, date)
                 if nbp_response.status_code == status.HTTP_200_OK:
                     exchange_rate_output = ExchangeRatePLN.objects.create(
                         date=date,
                         currency=currency_output,
-                        rate=Decimal(nbp_response.data["rates"][0]["mid"]),
+                        rate=Decimal(nbp_response.data["rate"]),
                     )
                 else:
                     return nbp_response
