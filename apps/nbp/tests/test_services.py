@@ -25,23 +25,23 @@ class Test_NBP_API:
             ],
         }
 
-    def test_get_exchange_response_200(self, requests_mock):
+    def test__get_exchange_response_200(self, requests_mock):
         requests_mock.get(
             url=self.url, json=self.response_ok, status_code=status.HTTP_200_OK
         )
-        response = self.nbp_api.get_exchange_response(self.code, self.date)
+        response = self.nbp_api._get_exchange_response(self.code, self.date)
         assert response.data == self.response_ok
         assert response.status_code == status.HTTP_200_OK
         assert requests_mock.call_count == 1
 
-    def test_get_exchange_response_404(self, requests_mock):
+    def test__get_exchange_response_404(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_404_NOT_FOUND)
-        response = self.nbp_api.get_exchange_response(self.code, self.date)
+        response = self.nbp_api._get_exchange_response(self.code, self.date)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert requests_mock.call_count == 1
 
-    def test_get_exchange_response_400(self, requests_mock):
+    def test__get_exchange_response_400(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_400_BAD_REQUEST)
-        response = self.nbp_api.get_exchange_response(self.code, self.date)
+        response = self.nbp_api._get_exchange_response(self.code, self.date)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert requests_mock.call_count == 1

@@ -12,7 +12,7 @@ class NBP_API:
         self.logger = logging.getLogger("NBP API")
         self.timeout = 3
 
-    def get_exchange_response(self, code: str, date: datetime.date) -> Response:
+    def _get_exchange_response(self, code: str, date: datetime.date) -> Response:
         try:
             response = requests.get(
                 url=f"{self.rates_a_url}/{code}/{str(date)}/",
@@ -29,7 +29,7 @@ class NBP_API:
             return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
     def get_exchange_rate(self, code: str, date: datetime.date) -> Response:
-        response = self.get_exchange_response(code, date)
+        response = self._get_exchange_response(code, date)
         if response.status_code == status.HTTP_200_OK:
             return Response(
                 {"rate": response.data["rates"][0]["mid"]},
