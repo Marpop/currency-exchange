@@ -1,11 +1,3 @@
-from django.urls import path
+from django.urls import include, path
 
-from apps.nbp.views import ExchangeRateView
-
-urlpatterns = [
-    path(
-        "nbp/exchange/",
-        ExchangeRateView.as_view(),
-        name="exchange",
-    ),
-]
+urlpatterns = [path("nbp/", include(("apps.nbp.urls", "nbp")))]

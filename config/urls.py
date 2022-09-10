@@ -11,7 +11,7 @@ urlpatterns = [path(settings.ADMIN_URL, admin.site.urls)] + static(
 
 # API URLS
 urlpatterns += [
-    path("api/", include("config.api")),
+    path("api/", include(("config.api", "api"))),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),  # type: ignore
     path(
         "api/docs/",
