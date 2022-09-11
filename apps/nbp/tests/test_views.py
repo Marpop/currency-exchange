@@ -16,8 +16,8 @@ class TestExchangeRateView:
         self.url_test_statuses = self.url.format(
             reverse("api:nbp:exchange"),
             "2020-04-04",
-            str(Currency.USD),
-            str(Currency.PLN),
+            Currency.USD.name,
+            Currency.PLN.name,
             100,
         )
         self.api_client = APIClient()
@@ -26,11 +26,11 @@ class TestExchangeRateView:
     def test_get_200(self, mocker):
         get_exchange_rate = mocker.patch(
             self.mocker_path,
-            return_value=Response({str(Currency.PLN): 250}, status=status.HTTP_200_OK),
+            return_value=Response({Currency.PLN.name: 250}, status=status.HTTP_200_OK),
         )
         response = self.api_client.get(self.url_test_statuses)
         get_exchange_rate.assert_called_once()
-        assert response.json() == {str(Currency.PLN): 250}
+        assert response.json() == {Currency.PLN.name: 250}
         assert response.status_code == status.HTTP_200_OK
         assert get_exchange_rate.call_count == 1
 
@@ -72,8 +72,8 @@ class TestExchangeRateView:
         [
             (
                 "2020-04-",
-                str(Currency.USD),
-                str(Currency.PLN),
+                Currency.USD.name,
+                Currency.PLN.name,
                 100,
                 {
                     "date": [
@@ -83,21 +83,21 @@ class TestExchangeRateView:
             ),
             (
                 "2020-04-04",
-                str(Currency.USD),
-                str(Currency.USD),
+                Currency.USD.name,
+                Currency.USD.name,
                 100,
                 {"non_field_errors": ["Currency input and output cannot be the same."]},
             ),
             (
                 "2020-04-04",
                 "AAA",
-                str(Currency.USD),
+                Currency.USD.name,
                 100,
                 {"currency_input": ['"AAA" is not a valid choice.']},
             ),
             (
                 "2020-04-04",
-                str(Currency.USD),
+                Currency.USD.name,
                 "AAA",
                 100,
                 {"currency_output": ['"AAA" is not a valid choice.']},
@@ -105,7 +105,7 @@ class TestExchangeRateView:
             (
                 "2020-04-04",
                 "USD",
-                str(Currency.PLN),
+                Currency.PLN.name,
                 "AAA",
                 {"amount": ["A valid number is required."]},
             ),

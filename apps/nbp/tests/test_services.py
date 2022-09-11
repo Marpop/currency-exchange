@@ -11,7 +11,7 @@ from apps.nbp.services import NBP_API
 class Test_NBP_API:
     def setup(self):
         self.nbp_api = NBP_API()
-        self.code = str(CurrencyExchangePLN.USD)
+        self.code = CurrencyExchangePLN.USD.name
         self.date = datetime.date(2016, 4, 4)
         self.url = f"{self.nbp_api.rates_a_url}/{self.code}/{str(self.date)}/"
         self.response_ok = {
