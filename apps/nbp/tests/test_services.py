@@ -1,11 +1,14 @@
 import datetime
 
+import pytest
 import requests
 from rest_framework import status
 from rest_framework.response import Response
 
 from apps.nbp.choices import Currency, CurrencyExchangePLN
 from apps.nbp.services import NBP_API
+
+pytestmark = pytest.mark.django_db
 
 
 class Test_NBP_API:
@@ -39,11 +42,105 @@ class Test_NBP_API:
     def test__get_exchange_response_404(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_404_NOT_FOUND)
         response = self.nbp_api._get_exchange_response(self.code, self.date)
+        assert not response.data
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert requests_mock.call_count == 1
 
     def test__get_exchange_response_400(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_400_BAD_REQUEST)
         response = self.nbp_api._get_exchange_response(self.code, self.date)
+        assert not response.data
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert requests_mock.call_count == 1
+
+    def test__get_exchange_response_503(self, requests_mock):
+        requests_mock.get(url=self.url, exc=requests.exceptions.ConnectTimeout)
+        response = self.nbp_api._get_exchange_response(self.code, self.date)
+        assert not response.data
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert requests_mock.call_count == 1
+
+    def test___get_exchange_rate_200(self, mocker):
+        _get_exchange_response = mocker.patch(
+            "apps.nbp.services.NBP_API._get_exchange_response",
+            return_value=Response(self.response_ok, status=status.HTTP_200_OK),
+        )
+        response = self.nbp_api._get_exchange_rate(self.code, self.date)
+        assert response.data == {"rate": 3.7254}
+        assert response.status_code == status.HTTP_200_OK
+        assert _get_exchange_response.call_count == 1
+
+    def test___get_exchange_rate_404(self, mocker):
+        _get_exchange_response = mocker.patch(
+            "apps.nbp.services.NBP_API._get_exchange_response",
+            return_value=Response(self.response_ok, status=status.HTTP_404_NOT_FOUND),
+        )
+        response = self.nbp_api._get_exchange_rate(self.code, self.date)
+        assert not response.data
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert _get_exchange_response.call_count == 1
+
+    def test_exchange_input_currency_PLN(self, mocker):
+        _exchange_pln = mocker.patch(
+            "apps.nbp.services.NBP_API._exchange_pln",
+            return_value=Response({"rate": 26.81}, status=status.HTTP_200_OK),
+        )
+        response = self.nbp_api.exchange(
+            self.date,
+            currency_input=Currency.PLN.name,
+            currency_output=Currency.USD.name,
+            amount=100,
+        )
+        assert response.data == {"rate": 26.81}
+        assert response.status_code == status.HTTP_200_OK
+        assert _exchange_pln.call_count == 1
+
+    def test_exchange_output_currency_PLN(self, mocker):
+        _exchange_pln = mocker.patch(
+            "apps.nbp.services.NBP_API._exchange_pln",
+            return_value=Response({"rate": 26.81}, status=status.HTTP_200_OK),
+        )
+        response = self.nbp_api.exchange(
+            self.date,
+            currency_input=Currency.USD.name,
+            currency_output=Currency.PLN.name,
+            amount=100,
+        )
+        assert response.data == {"rate": 26.81}
+        assert response.status_code == status.HTTP_200_OK
+        assert _exchange_pln.call_count == 1
+
+    @pytest.mark.parametrize(
+        "currency_input, currency_output, mocker_path",
+        [
+            (
+                Currency.PLN.name,
+                Currency.USD.name,
+                "apps.nbp.services.NBP_API._exchange_pln",
+            ),
+            (
+                Currency.USD.name,
+                Currency.PLN.name,
+                "apps.nbp.services.NBP_API._exchange_pln",
+            ),
+            (
+                Currency.USD.name,
+                Currency.GBP.name,
+                "apps.nbp.services.NBP_API._exchange_not_pln",
+            ),
+        ],
+    )
+    def test_exchange(self, currency_input, currency_output, mocker_path, mocker):
+        mocker = mocker.patch(
+            mocker_path,
+            return_value=Response({currency_output: 26.81}, status=status.HTTP_200_OK),
+        )
+        response = self.nbp_api.exchange(
+            self.date,
+            currency_input=currency_input,
+            currency_output=currency_output,
+            amount=100,
+        )
+        assert response.data == {currency_output: 26.81}
+        assert response.status_code == status.HTTP_200_OK
+        assert mocker.call_count == 1
