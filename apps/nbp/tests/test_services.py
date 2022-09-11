@@ -1,8 +1,10 @@
 import datetime
 
+import requests
 from rest_framework import status
+from rest_framework.response import Response
 
-from apps.nbp.choices import CurrencyExchangePLN
+from apps.nbp.choices import Currency, CurrencyExchangePLN
 from apps.nbp.services import NBP_API
 
 
