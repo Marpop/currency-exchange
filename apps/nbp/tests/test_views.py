@@ -13,58 +13,47 @@ pytestmark = pytest.mark.django_db
 class TestExchangeRateView:
     def setup(self):
         self.url = "{}?date={}&currency_input={}&currency_output={}&amount={}"
-        self.url_test_statuses = self.url.format(
-            reverse("api:nbp:exchange"),
-            "2020-04-04",
-            Currency.USD.name,
-            Currency.PLN.name,
-            100,
-        )
         self.api_client = APIClient()
-        self.mocker_path = "apps.nbp.services.NBP_API.exchange"
 
-    def test_get_200(self, mocker):
+    @pytest.mark.parametrize(
+        "response_data, response_status_code, expected_status_code",
+        [
+            ({Currency.PLN.name: 250}, status.HTTP_200_OK, status.HTTP_200_OK),
+            (
+                {"detail": "Not found."},
+                status.HTTP_404_NOT_FOUND,
+                status.HTTP_404_NOT_FOUND,
+            ),
+            (
+                {"detail": "Not found."},
+                status.HTTP_400_BAD_REQUEST,
+                status.HTTP_404_NOT_FOUND,
+            ),
+            (
+                {"detail": "Service unavailable."},
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            ),
+        ],
+    )
+    def test_get(
+        self, response_data, response_status_code, expected_status_code, mocker
+    ):
         get_exchange_rate = mocker.patch(
-            self.mocker_path,
-            return_value=Response({Currency.PLN.name: 250}, status=status.HTTP_200_OK),
+            "apps.nbp.services.NBP_API.exchange",
+            return_value=Response(response_data, status=response_status_code),
         )
-        response = self.api_client.get(self.url_test_statuses)
-        get_exchange_rate.assert_called_once()
-        assert response.json() == {Currency.PLN.name: 250}
-        assert response.status_code == status.HTTP_200_OK
-        assert get_exchange_rate.call_count == 1
-
-    def test_get_404(self, mocker):
-        get_exchange_rate = mocker.patch(
-            self.mocker_path,
-            return_value=Response(status=status.HTTP_404_NOT_FOUND),
+        response = self.api_client.get(
+            self.url.format(
+                reverse("api:nbp:exchange"),
+                "2020-04-04",
+                Currency.USD.name,
+                Currency.PLN.name,
+                100,
+            )
         )
-        response = self.api_client.get(self.url_test_statuses)
-        get_exchange_rate.assert_called_once()
-        assert response.json() == {"detail": "Not found."}
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert get_exchange_rate.call_count == 1
-
-    def test_get_400(self, mocker):
-        get_exchange_rate = mocker.patch(
-            self.mocker_path,
-            return_value=Response(status=status.HTTP_400_BAD_REQUEST),
-        )
-        response = self.api_client.get(self.url_test_statuses)
-        get_exchange_rate.assert_called_once()
-        assert response.json() == {"detail": "Not found."}
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert get_exchange_rate.call_count == 1
-
-    def test_get_503(self, mocker):
-        get_exchange_rate = mocker.patch(
-            self.mocker_path,
-            return_value=Response(status=status.HTTP_503_SERVICE_UNAVAILABLE),
-        )
-        response = self.api_client.get(self.url_test_statuses)
-        get_exchange_rate.assert_called_once()
-        assert response.json() == {"detail": "Service unavailable."}
-        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert response.json() == response_data
+        assert response.status_code == expected_status_code
         assert get_exchange_rate.call_count == 1
 
     @pytest.mark.parametrize(
@@ -111,7 +100,7 @@ class TestExchangeRateView:
             ),
         ],
     )
-    def test_get_validation(  # pylint: disable=too-many-arguments
+    def test_validation(  # pylint: disable=too-many-arguments
         self,
         date,
         currency_input,
