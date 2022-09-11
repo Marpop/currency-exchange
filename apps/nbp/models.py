@@ -19,7 +19,7 @@ class ExchangeRatePLN(models.Model):
         unique_together = ("date", "currency")
 
     def __str__(self):
-        return f"{self.date} {self.currency} {self.rate}"
+        return f"{self.date} {self.currency} {round(self.rate, 4)}"
 
     def exchange_to_pln(self, amount: Decimal) -> Decimal:
         return round(amount * self.rate, 2)
