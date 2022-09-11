@@ -2,7 +2,6 @@ from django.urls import reverse
 
 import pytest
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from apps.nbp.choices import Currency
@@ -15,45 +14,22 @@ class TestExchangeRateView:
         self.url = "{}?date={}&currency_input={}&currency_output={}&amount={}"
         self.api_client = APIClient()
 
-    @pytest.mark.parametrize(
-        "response_data, response_status_code, expected_status_code",
-        [
-            ({Currency.PLN.name: 250}, status.HTTP_200_OK, status.HTTP_200_OK),
-            (
-                {"detail": "Not found."},
-                status.HTTP_404_NOT_FOUND,
-                status.HTTP_404_NOT_FOUND,
-            ),
-            (
-                {"detail": "Not found."},
-                status.HTTP_400_BAD_REQUEST,
-                status.HTTP_404_NOT_FOUND,
-            ),
-            (
-                {"detail": "Service unavailable."},
-                status.HTTP_503_SERVICE_UNAVAILABLE,
-                status.HTTP_503_SERVICE_UNAVAILABLE,
-            ),
-        ],
-    )
-    def test_get(
-        self, response_data, response_status_code, expected_status_code, mocker
-    ):
+    def test_get_ok(self, mocker):
         get_exchange_rate = mocker.patch(
             "apps.nbp.services.NBP_API.exchange",
-            return_value=Response(response_data, status=response_status_code),
+            return_value=250,
         )
         response = self.api_client.get(
             self.url.format(
                 reverse("api:nbp:exchange"),
-                "2020-04-04",
+                "2020-04-07",
                 Currency.USD.name,
                 Currency.PLN.name,
                 100,
             )
         )
-        assert response.json() == response_data
-        assert response.status_code == expected_status_code
+        assert response.json() == {Currency.PLN.name: 250}
+        assert response.status_code == status.HTTP_200_OK
         assert get_exchange_rate.call_count == 1
 
     @pytest.mark.parametrize(
@@ -71,36 +47,57 @@ class TestExchangeRateView:
                 },
             ),
             (
-                "2020-04-04",
+                "2020-04-07",
                 Currency.USD.name,
                 Currency.USD.name,
                 100,
                 {"non_field_errors": ["Currency input and output cannot be the same."]},
             ),
             (
-                "2020-04-04",
+                "2020-04-07",
                 "AAA",
                 Currency.USD.name,
                 100,
                 {"currency_input": ['"AAA" is not a valid choice.']},
             ),
             (
-                "2020-04-04",
+                "2020-04-07",
                 Currency.USD.name,
                 "AAA",
                 100,
                 {"currency_output": ['"AAA" is not a valid choice.']},
             ),
             (
-                "2020-04-04",
+                "2020-04-07",
                 "USD",
                 Currency.PLN.name,
                 "AAA",
                 {"amount": ["A valid number is required."]},
             ),
+            (
+                "2001-04-07",
+                Currency.USD.name,
+                Currency.PLN.name,
+                100,
+                {"date": ["Date cannot be before 2002-01-02."]},
+            ),
+            (
+                "9999-04-07",
+                Currency.USD.name,
+                Currency.PLN.name,
+                100,
+                {"date": ["Date cannot be in the future."]},
+            ),
+            (
+                "2020-04-04",
+                Currency.USD.name,
+                Currency.PLN.name,
+                100,
+                {"date": ["Date cannot be a weekend day."]},
+            ),
         ],
     )
-    def test_validation(  # pylint: disable=too-many-arguments
+    def test_get_bad_request(  # pylint: disable=too-many-arguments
         self,
         date,
         currency_input,

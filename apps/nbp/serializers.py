@@ -1,3 +1,5 @@
+from datetime import date
+
 from rest_framework import serializers
 
 from apps.nbp.choices import Currency
@@ -24,3 +26,12 @@ class ExchangeRateSerializer(serializers.Serializer):  # pylint: disable=abstrac
                 "Currency input and output cannot be the same."
             )
         return attrs
+
+    def validate_date(self, value):
+        if value > date.today():
+            raise serializers.ValidationError("Date cannot be in the future.")
+        if value < date(2002, 1, 2):
+            raise serializers.ValidationError("Date cannot be before 2002-01-02.")
+        if value.weekday() in [5, 6]:
+            raise serializers.ValidationError("Date cannot be a weekend day.")
+        return value

@@ -22,7 +22,7 @@ class ExchangeRatePLN(models.Model):
         return f"{self.date} {self.currency} {round(self.rate, 4)}"
 
     def exchange_to_pln(self, amount: Decimal) -> Decimal:
-        return round(amount * self.rate, 2)
+        return round(amount * Decimal(self.rate), 2)
 
     def exchange_from_pln(self, amount: Decimal) -> Decimal:
-        return round(amount / self.rate, 2)
+        return round(amount / Decimal(self.rate), 2)
