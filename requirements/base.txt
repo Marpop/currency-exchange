@@ -11,3 +11,4 @@ djangorestframework==3.13.1  # https://github.com/encode/django-rest-framework
 django-cors-headers==3.13.0 # https://github.com/adamchainz/django-cors-headers
 drf-spectacular==0.23.1  # https://github.com/tfranzel/drf-spectacular
 requests-mock==1.10.0  # https://github.com/jamielennox/requests-mock
+holidays==0.15  # https://github.com/dr-prodigy/python-holidays

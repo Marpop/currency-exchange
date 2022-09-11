@@ -95,6 +95,13 @@ class TestExchangeRateView:
                 100,
                 {"date": ["Date cannot be a weekend day."]},
             ),
+            (
+                "2022-08-15",
+                Currency.USD.name,
+                Currency.PLN.name,
+                100,
+                {"date": ["Date cannot be a holiday."]},
+            ),
         ],
     )
     def test_get_bad_request(  # pylint: disable=too-many-arguments
