@@ -16,7 +16,7 @@ class NBP_API:
         self.logger = logging.getLogger("NBP API")
         self.timeout = 3
 
-    def _get_exchange_response(self, code: str, date: datetime.date) -> Response:
+    def _fetch_exchange_response(self, code: str, date: datetime.date) -> Response:
         try:
             response = requests.get(
                 url=f"{self.rates_a_url}/{code}/{str(date)}/",
@@ -32,8 +32,8 @@ class NBP_API:
             self.logger.error(f"Request error: {error}")
             return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-    def _get_exchange_rate(self, code: str, date: datetime.date) -> Response:
-        response = self._get_exchange_response(code, date)
+    def _fetch_exchange_rate(self, code: str, date: datetime.date) -> Response:
+        response = self._fetch_exchange_response(code, date)
         if response.status_code == status.HTTP_200_OK:
             return Response(
                 {"rate": response.data["rates"][0]["mid"]},
@@ -52,7 +52,7 @@ class NBP_API:
                 date=date, currency=rated_currency
             )
         except ExchangeRatePLN.DoesNotExist:
-            nbp_response = self._get_exchange_rate(rated_currency, date)
+            nbp_response = self._fetch_exchange_rate(rated_currency, date)
             if nbp_response.status_code == status.HTTP_200_OK:
                 exchange_rate = ExchangeRatePLN.objects.create(
                     date=date,
@@ -78,7 +78,7 @@ class NBP_API:
                 date=date, currency=currency_input
             )
         except ExchangeRatePLN.DoesNotExist:
-            nbp_response = self._get_exchange_rate(currency_input, date)
+            nbp_response = self._fetch_exchange_rate(currency_input, date)
             if nbp_response.status_code == status.HTTP_200_OK:
                 exchange_rate_input = ExchangeRatePLN.objects.create(
                     date=date,
@@ -92,7 +92,7 @@ class NBP_API:
                 date=date, currency=currency_output
             )
         except ExchangeRatePLN.DoesNotExist:
-            nbp_response = self._get_exchange_rate(currency_output, date)
+            nbp_response = self._fetch_exchange_rate(currency_output, date)
             if nbp_response.status_code == status.HTTP_200_OK:
                 exchange_rate_output = ExchangeRatePLN.objects.create(
                     date=date,

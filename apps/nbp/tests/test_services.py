@@ -30,32 +30,32 @@ class Test_NBP_API:
             ],
         }
 
-    def test__get_exchange_response_200(self, requests_mock):
+    def test__fetch_exchange_response_200(self, requests_mock):
         requests_mock.get(
             url=self.url, json=self.response_ok, status_code=status.HTTP_200_OK
         )
-        response = self.nbp_api._get_exchange_response(self.code, self.date)
+        response = self.nbp_api._fetch_exchange_response(self.code, self.date)
         assert response.data == self.response_ok
         assert response.status_code == status.HTTP_200_OK
         assert requests_mock.call_count == 1
 
-    def test__get_exchange_response_404(self, requests_mock):
+    def test__fetch_exchange_response_404(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_404_NOT_FOUND)
-        response = self.nbp_api._get_exchange_response(self.code, self.date)
+        response = self.nbp_api._fetch_exchange_response(self.code, self.date)
         assert not response.data
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert requests_mock.call_count == 1
 
-    def test__get_exchange_response_400(self, requests_mock):
+    def test__fetch_exchange_response_400(self, requests_mock):
         requests_mock.get(url=self.url, status_code=status.HTTP_400_BAD_REQUEST)
-        response = self.nbp_api._get_exchange_response(self.code, self.date)
+        response = self.nbp_api._fetch_exchange_response(self.code, self.date)
         assert not response.data
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert requests_mock.call_count == 1
 
-    def test__get_exchange_response_503(self, requests_mock):
+    def test__fetch_exchange_response_503(self, requests_mock):
         requests_mock.get(url=self.url, exc=requests.exceptions.ConnectTimeout)
-        response = self.nbp_api._get_exchange_response(self.code, self.date)
+        response = self.nbp_api._fetch_exchange_response(self.code, self.date)
         assert not response.data
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
         assert requests_mock.call_count == 1
@@ -64,15 +64,15 @@ class Test_NBP_API:
         "expected_response, status_code",
         [({"rate": 3.7254}, status.HTTP_200_OK), (None, status.HTTP_404_NOT_FOUND)],
     )
-    def test__get_exchange_rate(self, expected_response, status_code, mocker):
-        _get_exchange_response = mocker.patch(
-            "apps.nbp.services.NBP_API._get_exchange_response",
+    def test__fetch_exchange_rate(self, expected_response, status_code, mocker):
+        _fetch_exchange_response = mocker.patch(
+            "apps.nbp.services.NBP_API._fetch_exchange_response",
             return_value=Response(self.response_ok, status=status_code),
         )
-        response = self.nbp_api._get_exchange_rate(self.code, self.date)
+        response = self.nbp_api._fetch_exchange_rate(self.code, self.date)
         assert response.data == expected_response
         assert response.status_code == status_code
-        assert _get_exchange_response.call_count == 1
+        assert _fetch_exchange_response.call_count == 1
 
     @pytest.mark.parametrize(
         "currency_input, currency_output, mocker_path",
